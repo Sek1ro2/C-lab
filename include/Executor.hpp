@@ -33,5 +33,6 @@ namespace adas
     public:
         // 查询当前汽车姿态，纯虚函数，留给子类具体实现
         virtual Pose Query(void) const noexcept = 0;
+        virtual void Execute(const std::string &commands) noexcept = 0;
     };
 }
