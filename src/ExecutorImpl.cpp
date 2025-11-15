@@ -4,7 +4,7 @@
 namespace adas
 {
     // 并没有初始化ExecutorImpl的pose成员变量
-    ExecutorImpl::ExecutorImpl(const Pose &pose) noexcept :pose(pose) {}
+    ExecutorImpl::ExecutorImpl(const Pose &pose) noexcept : pose(pose) {}
 
     // Query方法
     Pose ExecutorImpl::Query(void) const noexcept
@@ -17,7 +17,8 @@ namespace adas
     {
         return new (std::nothrow) ExecutorImpl(pose); // c++17
     }
-    void ExecutorImpl::Execute(const std::string &commands) noexcept {
+    void ExecutorImpl::Execute(const std::string &commands) noexcept
+    {
         for (const auto cmd : commands)
         {
             if (cmd == 'M')
@@ -37,6 +38,25 @@ namespace adas
                 else if (pose.heading == 'S')
                 {
                     --pose.y;
+                }
+            }
+            else if (cmd == 'L')
+            {
+                if (pose.heading == 'E')
+                {
+                    pose.heading = 'N';
+                }
+                else if (pose.heading == 'W')
+                {
+                    pose.heading = 'S';
+                }
+                else if (pose.heading == 'N')
+                {
+                    pose.heading = 'W';
+                }
+                else if (pose.heading == 'S')
+                {
+                    pose.heading = 'E';
                 }
             }
         }
