@@ -1,5 +1,6 @@
 #include "ExecutorImpl.hpp"
 #include <cctype>
+#include <algorithm>
 
 namespace adas
 {
@@ -12,9 +13,15 @@ namespace adas
 
     void ExecutorImpl::Execute(const std::string &commands) noexcept
     {
-        for (size_t i = 0; i < commands.size(); ++i)
+        for (size_t i = 0; i < commands.size();)
         {
-            char cmd = commands[i];
+            char cmd = std::toupper(commands[i]);
+            if (!IsValidCommand(cmd))
+            {
+                ++i;
+                continue;
+            }
+
             if (cmd == 'F')
             {
                 int steps = 0;
@@ -24,7 +31,6 @@ namespace adas
                     steps = steps * 10 + (commands[i] - '0');
                     ++i;
                 }
-                --i;
                 std::unique_ptr<Command> cmder = CreateCommand('F', steps > 0 ? steps : 1);
                 if (cmder)
                     cmder->DoOperate(*this);
@@ -34,6 +40,7 @@ namespace adas
                 std::unique_ptr<Command> cmder = CreateCommand(cmd);
                 if (cmder)
                     cmder->DoOperate(*this);
+                ++i;
             }
         }
     }
@@ -45,16 +52,17 @@ namespace adas
 
     void ExecutorImpl::Move(int steps) noexcept
     {
-        for (int i = 0; i < steps; ++i)
+        int abs_steps = std::abs(steps);
+        for (int i = 0; i < abs_steps; ++i)
         {
             if (pose.heading == 'E')
-                ++pose.x;
+                pose.x += steps > 0 ? 1 : -1;
             else if (pose.heading == 'W')
-                --pose.x;
+                pose.x += steps > 0 ? -1 : 1;
             else if (pose.heading == 'N')
-                ++pose.y;
+                pose.y += steps > 0 ? 1 : -1;
             else if (pose.heading == 'S')
-                --pose.y;
+                pose.y += steps > 0 ? -1 : 1;
         }
     }
 
@@ -117,5 +125,10 @@ namespace adas
         default:
             return nullptr;
         }
+    }
+
+    bool ExecutorImpl::IsValidCommand(char cmd) noexcept
+    {
+        return cmd == 'M' || cmd == 'L' || cmd == 'R' || cmd == 'F';
     }
 }

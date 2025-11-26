@@ -59,6 +59,7 @@ namespace adas
         };
 
         static std::unique_ptr<Command> CreateCommand(char cmd, int steps = 1);
+        static bool IsValidCommand(char cmd) noexcept;
 
         Pose pose;
     };
