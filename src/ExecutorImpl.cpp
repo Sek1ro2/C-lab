@@ -1,134 +1,58 @@
+#include <gtest/gtest.h>
+#include "Executor.hpp"
 #include "ExecutorImpl.hpp"
-#include <cctype>
-#include <algorithm>
 
 namespace adas
 {
-    ExecutorImpl::ExecutorImpl(const Pose &pose) noexcept : pose(pose) {}
-
-    Pose ExecutorImpl::Query(void) const noexcept
+    TEST(ExecutorTest, FCommand_Forward5Steps_East)
     {
-        return pose;
+        Executor *executor = Executor::NewExecutor(Pose{0, 0, 'E'});
+        executor->Execute("F5");
+        Pose res = executor->Query();
+        EXPECT_TRUE(PoseEq(res, Pose{5, 0, 'E'}));
+        delete executor;
     }
 
-    void ExecutorImpl::Execute(const std::string &commands) noexcept
+    TEST(ExecutorTest, FCommand_Forward3Steps_North)
     {
-        for (size_t i = 0; i < commands.size();)
-        {
-            char cmd = std::toupper(commands[i]);
-            if (!IsValidCommand(cmd))
-            {
-                ++i;
-                continue;
-            }
-
-            if (cmd == 'F')
-            {
-                int steps = 0;
-                ++i;
-                while (i < commands.size() && std::isdigit(commands[i]))
-                {
-                    steps = steps * 10 + (commands[i] - '0');
-                    ++i;
-                }
-                std::unique_ptr<Command> cmder = CreateCommand('F', steps > 0 ? steps : 1);
-                if (cmder)
-                    cmder->DoOperate(*this);
-            }
-            else
-            {
-                std::unique_ptr<Command> cmder = CreateCommand(cmd);
-                if (cmder)
-                    cmder->DoOperate(*this);
-                ++i;
-            }
-        }
+        Executor *executor = Executor::NewExecutor(Pose{0, 0, 'N'});
+        executor->Execute("L F3");
+        Pose res = executor->Query();
+        EXPECT_TRUE(PoseEq(res, Pose{0, 3, 'N'}));
+        delete executor;
     }
 
-    void ExecutorImpl::Move(void) noexcept
+    TEST(ExecutorTest, FCommand_NoNumber_Default1Step)
     {
-        Move(1);
+        Executor *executor = Executor::NewExecutor(Pose{0, 0, 'S'});
+        executor->Execute("F");
+        Pose res = executor->Query();
+        EXPECT_TRUE(PoseEq(res, Pose{0, -1, 'S'}));
+        delete executor;
     }
 
-    void ExecutorImpl::Move(int steps) noexcept
+    // 保留原有测试用例
+    TEST(ExecutorTest, EmptyCommand)
     {
-        int abs_steps = std::abs(steps);
-        for (int i = 0; i < abs_steps; ++i)
-        {
-            if (pose.heading == 'E')
-                pose.x += steps > 0 ? 1 : -1;
-            else if (pose.heading == 'W')
-                pose.x += steps > 0 ? -1 : 1;
-            else if (pose.heading == 'N')
-                pose.y += steps > 0 ? 1 : -1;
-            else if (pose.heading == 'S')
-                pose.y += steps > 0 ? -1 : 1;
-        }
+        Executor *executor = Executor::NewExecutor(Pose{0, 0, 'E'});
+        executor->Execute("");
+        Pose res = executor->Query();
+        EXPECT_TRUE(PoseEq(res, Pose{0, 0, 'E'}));
+        delete executor;
     }
 
-    void ExecutorImpl::TurnLeft(void) noexcept
+    TEST(ExecutorTest, MCommand_East)
     {
-        if (pose.heading == 'E')
-            pose.heading = 'N';
-        else if (pose.heading == 'N')
-            pose.heading = 'W';
-        else if (pose.heading == 'W')
-            pose.heading = 'S';
-        else if (pose.heading == 'S')
-            pose.heading = 'E';
+        Executor *executor = Executor::NewExecutor(Pose{0, 0, 'E'});
+        executor->Execute("M");
+        Pose res = executor->Query();
+        EXPECT_TRUE(PoseEq(res, Pose{1, 0, 'E'}));
+        delete executor;
     }
+}
 
-    void ExecutorImpl::TurnRight(void) noexcept
-    {
-        if (pose.heading == 'E')
-            pose.heading = 'S';
-        else if (pose.heading == 'S')
-            pose.heading = 'W';
-        else if (pose.heading == 'W')
-            pose.heading = 'N';
-        else if (pose.heading == 'N')
-            pose.heading = 'E';
-    }
-
-    void ExecutorImpl::MoveCommand::DoOperate(ExecutorImpl &executor) const noexcept
-    {
-        executor.Move();
-    }
-
-    void ExecutorImpl::TurnLeftCommand::DoOperate(ExecutorImpl &executor) const noexcept
-    {
-        executor.TurnLeft();
-    }
-
-    void ExecutorImpl::TurnRightCommand::DoOperate(ExecutorImpl &executor) const noexcept
-    {
-        executor.TurnRight();
-    }
-
-    void ExecutorImpl::ForwardCommand::DoOperate(ExecutorImpl &executor) const noexcept
-    {
-        executor.Move(steps_);
-    }
-
-    std::unique_ptr<ExecutorImpl::Command> ExecutorImpl::CreateCommand(char cmd, int steps)
-    {
-        switch (cmd)
-        {
-        case 'M':
-            return std::make_unique<MoveCommand>();
-        case 'L':
-            return std::make_unique<TurnLeftCommand>();
-        case 'R':
-            return std::make_unique<TurnRightCommand>();
-        case 'F':
-            return std::make_unique<ForwardCommand>(steps);
-        default:
-            return nullptr;
-        }
-    }
-
-    bool ExecutorImpl::IsValidCommand(char cmd) noexcept
-    {
-        return cmd == 'M' || cmd == 'L' || cmd == 'R' || cmd == 'F';
-    }
+int main(int argc, char **argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

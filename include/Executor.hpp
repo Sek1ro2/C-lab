@@ -1,38 +1,28 @@
 #pragma once
+
 #include <string>
+
 namespace adas
 {
-    /* 汽车姿态 */
     struct Pose
     {
-        int x;        // x坐标
-        int y;        // y坐标
-        char heading; // 'N', 'E', 'S', 'W'代表四个方向
+        int x{0};
+        int y{0};
+        char heading{'E'};
     };
 
-    /*
-        驾驶动作执行器接口
-    */
+    // PDF要求的PoseEq函数（非运算符重载，纯函数形式）
+    inline bool PoseEq(const Pose &lhs, const Pose &rhs) noexcept
+    {
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.heading == rhs.heading;
+    }
+
     class Executor
     {
     public:
-        // Caller should delete *executor when it is no longer needed.
-        static Executor *NewExecutor(const Pose &pose = {0, 0, 'N'}) noexcept;
-
-    public:
-        // 默认构造函数
-        Executor(void) = default;
-        // 默认析构函数
-        virtual ~Executor(void) = default;
-
-        // 不允许拷贝
-        Executor(const Executor &) = delete;
-        // 不允许赋值
-        Executor &operator=(const Executor &) = delete;
-
-    public:
-        // 查询当前汽车姿态，纯虚函数，留给子类具体实现
+        virtual ~Executor() = default;
         virtual Pose Query(void) const noexcept = 0;
         virtual void Execute(const std::string &commands) noexcept = 0;
+        static Executor *NewExecutor(const Pose &pose) noexcept;
     };
 }
