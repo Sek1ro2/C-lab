@@ -17,8 +17,8 @@ namespace adas
         void Execute(const std::string &commands) noexcept override;
 
     private:
-        // 仅新增这一行：Move方法声明（实验二第一步唯一修改）
         void Move(void) noexcept;
+        void TurnLeft(void) noexcept;
 
         Pose pose;
     };
