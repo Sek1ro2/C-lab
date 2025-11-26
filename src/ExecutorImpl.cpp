@@ -13,19 +13,7 @@ namespace adas
     {
         for (const auto cmd : commands)
         {
-            std::unique_ptr<Command> cmder;
-            if (cmd == 'M')
-            {
-                cmder = std::make_unique<MoveCommand>();
-            }
-            else if (cmd == 'L')
-            {
-                cmder = std::make_unique<TurnLeftCommand>();
-            }
-            else if (cmd == 'R')
-            {
-                cmder = std::make_unique<TurnRightCommand>();
-            }
+            std::unique_ptr<Command> cmder = CreateCommand(cmd);
             if (cmder)
             {
                 cmder->DoOperate(*this);
@@ -82,5 +70,20 @@ namespace adas
     void ExecutorImpl::TurnRightCommand::DoOperate(ExecutorImpl &executor) const noexcept
     {
         executor.TurnRight();
+    }
+
+    std::unique_ptr<ExecutorImpl::Command> ExecutorImpl::CreateCommand(char cmd)
+    {
+        switch (cmd)
+        {
+        case 'M':
+            return std::make_unique<MoveCommand>();
+        case 'L':
+            return std::make_unique<TurnLeftCommand>();
+        case 'R':
+            return std::make_unique<TurnRightCommand>();
+        default:
+            return nullptr;
+        }
     }
 }

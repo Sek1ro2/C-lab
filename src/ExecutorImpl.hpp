@@ -47,6 +47,8 @@ namespace adas
             void DoOperate(ExecutorImpl &executor) const noexcept override;
         };
 
+        static std::unique_ptr<Command> CreateCommand(char cmd);
+
         Pose pose;
     };
 }
