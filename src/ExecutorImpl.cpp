@@ -15,7 +15,8 @@ namespace adas
         {
             if (cmd == 'M')
             {
-                Move();
+                std::unique_ptr<MoveCommand> cmder = std::make_unique<MoveCommand>();
+                cmder->DoOperate(*this);
             }
             else if (cmd == 'L')
             {
@@ -62,5 +63,10 @@ namespace adas
             pose.heading = 'N';
         else if (pose.heading == 'N')
             pose.heading = 'E';
+    }
+
+    void ExecutorImpl::MoveCommand::DoOperate(ExecutorImpl &executor) const noexcept
+    {
+        executor.Move();
     }
 }

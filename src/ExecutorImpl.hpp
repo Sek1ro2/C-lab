@@ -2,6 +2,7 @@
 
 #include "Executor.hpp"
 #include <string>
+#include <memory>
 
 namespace adas
 {
@@ -20,6 +21,12 @@ namespace adas
         void Move(void) noexcept;
         void TurnLeft(void) noexcept;
         void TurnRight(void) noexcept;
+
+        class MoveCommand final
+        {
+        public:
+            void DoOperate(ExecutorImpl &executor) const noexcept;
+        };
 
         Pose pose;
     };
