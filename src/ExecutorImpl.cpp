@@ -1,4 +1,5 @@
 #include "ExecutorImpl.hpp"
+#include <cctype>
 
 namespace adas
 {
@@ -11,26 +12,50 @@ namespace adas
 
     void ExecutorImpl::Execute(const std::string &commands) noexcept
     {
-        for (const auto cmd : commands)
+        for (size_t i = 0; i < commands.size(); ++i)
         {
-            std::unique_ptr<Command> cmder = CreateCommand(cmd);
-            if (cmder)
+            char cmd = commands[i];
+            if (cmd == 'F')
             {
-                cmder->DoOperate(*this);
+                int steps = 0;
+                ++i;
+                while (i < commands.size() && std::isdigit(commands[i]))
+                {
+                    steps = steps * 10 + (commands[i] - '0');
+                    ++i;
+                }
+                --i;
+                std::unique_ptr<Command> cmder = CreateCommand('F', steps > 0 ? steps : 1);
+                if (cmder)
+                    cmder->DoOperate(*this);
+            }
+            else
+            {
+                std::unique_ptr<Command> cmder = CreateCommand(cmd);
+                if (cmder)
+                    cmder->DoOperate(*this);
             }
         }
     }
 
     void ExecutorImpl::Move(void) noexcept
     {
-        if (pose.heading == 'E')
-            ++pose.x;
-        else if (pose.heading == 'W')
-            --pose.x;
-        else if (pose.heading == 'N')
-            ++pose.y;
-        else if (pose.heading == 'S')
-            --pose.y;
+        Move(1);
+    }
+
+    void ExecutorImpl::Move(int steps) noexcept
+    {
+        for (int i = 0; i < steps; ++i)
+        {
+            if (pose.heading == 'E')
+                ++pose.x;
+            else if (pose.heading == 'W')
+                --pose.x;
+            else if (pose.heading == 'N')
+                ++pose.y;
+            else if (pose.heading == 'S')
+                --pose.y;
+        }
     }
 
     void ExecutorImpl::TurnLeft(void) noexcept
@@ -72,7 +97,12 @@ namespace adas
         executor.TurnRight();
     }
 
-    std::unique_ptr<ExecutorImpl::Command> ExecutorImpl::CreateCommand(char cmd)
+    void ExecutorImpl::ForwardCommand::DoOperate(ExecutorImpl &executor) const noexcept
+    {
+        executor.Move(steps_);
+    }
+
+    std::unique_ptr<ExecutorImpl::Command> ExecutorImpl::CreateCommand(char cmd, int steps)
     {
         switch (cmd)
         {
@@ -82,6 +112,8 @@ namespace adas
             return std::make_unique<TurnLeftCommand>();
         case 'R':
             return std::make_unique<TurnRightCommand>();
+        case 'F':
+            return std::make_unique<ForwardCommand>(steps);
         default:
             return nullptr;
         }

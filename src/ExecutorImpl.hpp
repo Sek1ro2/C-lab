@@ -19,6 +19,7 @@ namespace adas
 
     private:
         void Move(void) noexcept;
+        void Move(int steps) noexcept;
         void TurnLeft(void) noexcept;
         void TurnRight(void) noexcept;
 
@@ -47,7 +48,17 @@ namespace adas
             void DoOperate(ExecutorImpl &executor) const noexcept override;
         };
 
-        static std::unique_ptr<Command> CreateCommand(char cmd);
+        class ForwardCommand final : public Command
+        {
+        public:
+            explicit ForwardCommand(int steps) noexcept : steps_(steps) {}
+            void DoOperate(ExecutorImpl &executor) const noexcept override;
+
+        private:
+            int steps_;
+        };
+
+        static std::unique_ptr<Command> CreateCommand(char cmd, int steps = 1);
 
         Pose pose;
     };
