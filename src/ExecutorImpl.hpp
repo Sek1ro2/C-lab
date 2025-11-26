@@ -28,6 +28,18 @@ namespace adas
             void DoOperate(ExecutorImpl &executor) const noexcept;
         };
 
+        class TurnLeftCommand final
+        {
+        public:
+            void DoOperate(ExecutorImpl &executor) const noexcept;
+        };
+
+        class TurnRightCommand final
+        {
+        public:
+            void DoOperate(ExecutorImpl &executor) const noexcept;
+        };
+
         Pose pose;
     };
 }
