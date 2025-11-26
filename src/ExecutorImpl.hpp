@@ -22,22 +22,29 @@ namespace adas
         void TurnLeft(void) noexcept;
         void TurnRight(void) noexcept;
 
-        class MoveCommand final
+        class Command
         {
         public:
-            void DoOperate(ExecutorImpl &executor) const noexcept;
+            virtual ~Command() = default;
+            virtual void DoOperate(ExecutorImpl &executor) const noexcept = 0;
         };
 
-        class TurnLeftCommand final
+        class MoveCommand final : public Command
         {
         public:
-            void DoOperate(ExecutorImpl &executor) const noexcept;
+            void DoOperate(ExecutorImpl &executor) const noexcept override;
         };
 
-        class TurnRightCommand final
+        class TurnLeftCommand final : public Command
         {
         public:
-            void DoOperate(ExecutorImpl &executor) const noexcept;
+            void DoOperate(ExecutorImpl &executor) const noexcept override;
+        };
+
+        class TurnRightCommand final : public Command
+        {
+        public:
+            void DoOperate(ExecutorImpl &executor) const noexcept override;
         };
 
         Pose pose;
