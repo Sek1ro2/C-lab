@@ -1,18 +1,48 @@
 cmake_minimum_required(VERSION 4.0)
+project(C-lab)
 
-PROJECT("Experiment4Student")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-SET(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -Wall -Werror -Wnon-virtual-dtor -Woverloaded-virtual")
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else ()
+    add_compile_options(-Wall -Wextra -Werror -pedantic)
+endif ()
 
-#可执行文件输出目录
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#构建的库的输出目录
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) 
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-#构建test 目标
-ENABLE_TESTING()
-#向当前项目添加一个子目录，并且使得 CMake 在构建过程中进入该子目录继续处理其中的 CMakeLists.txt 文件。
-#这个命令通常用于管理项目中的多个模块或子项目。
-ADD_SUBDIRECTORY(src)
-ADD_SUBDIRECTORY(tests)
+
+set(SOURCE_FILES
+    src/ExecutorImpl.cpp
+)
+
+set(TEST_FILES
+    tests/ExecutorTest.cpp
+)
+
+add_executable(Experiment4Student-main
+    ${SOURCE_FILES}
+    ${TEST_FILES}
+)
+
+target_link_libraries(Experiment4Student-main
+    GTest::gtest_main
+)
+
+target_include_directories(Experiment4Student-main
+    PRIVATE ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${PROJECT_SOURCE_DIR}/src
+    PRIVATE ${PROJECT_SOURCE_DIR}/tests
+)
+
+include(GoogleTest)
+gtest_discover_tests(Experiment4Student-main)
